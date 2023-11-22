@@ -25,14 +25,14 @@ RUN if which rustup; then rustup self uninstall -y; fi && \
 RUN apt-get update && \
     apt-get remove -y llvm-10 && \
     apt-get install -y \
-        build-essential \
-        llvm-11 \
-        clang-12 \
+        build-essential lsb-release wget software-properties-common gnupg \
         cargo && \
     apt-get install -y wget libstdc++5 libtool-bin automake flex bison \
         libglib2.0-dev libpixman-1-dev python3-setuptools unzip \
         apt-utils apt-transport-https ca-certificates joe curl && \
-    PATH="/root/.cargo/bin/:$PATH" cargo install cargo-make
+    yes | bash -c "$(wget -O - https://apt.llvm.org/llvm.sh)" llvm.sh 17 && \
+    PATH="/root/.cargo/bin/:$PATH" cargo install cargo-make && \
+    apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # Download libafl.
 RUN git clone https://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@github.com/am009/LibAFL /libafl
