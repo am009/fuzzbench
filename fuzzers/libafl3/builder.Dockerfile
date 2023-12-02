@@ -35,7 +35,7 @@ RUN apt-get update && \
     apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # Download libafl.
-RUN git clone https://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@github.com/am009/LibAFL /libafl
+RUN git clone https://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@github.com/am009/LibAFL /libafl
 
 # Checkout a current commit
 RUN cd /libafl && git pull && git checkout e08b44607f9813e6bd7626871887264924c71aa8 || true
