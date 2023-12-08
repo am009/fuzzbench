@@ -519,8 +519,10 @@ class LocalDispatcher(BaseDispatcher):
         command = [
             'docker',
             'run',
-            '-ti',
-            '--rm',
+            '-ti']
+        if 'KEEP_FUZZBENCH_CONTAINER' not in os.environ:
+            command += ['--rm']
+        command += [
             '-v',
             '/var/run/docker.sock:/var/run/docker.sock',
             '-v',
