@@ -54,6 +54,8 @@ def is_local():
         _is_local = True
     except http.client.RemoteDisconnected:
         _is_local = True
+    except ConnectionResetError:
+        _is_local = True
     return _is_local
 
 
