@@ -17,7 +17,8 @@
 
 cd $SRC/botan
 
-ln -s $SRC/fuzzer_corpus .
+# prevent error when build twice.
+ln -s $SRC/fuzzer_corpus . || true
 
 ./configure.py --cc-bin=$CXX --cc-abi-flags="$CXXFLAGS" \
                --disable-shared --disable-modules=locking_allocator \

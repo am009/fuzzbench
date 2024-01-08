@@ -15,6 +15,8 @@
 #
 ################################################################################
 
+# remove cmake cache in case of buiding twice
+rm CMakeCache.txt || true
 cmake . -DBUILD_TESTING=OFF -DBUILD_SHARED_LIBS=OFF
 make clean
 make -j$(nproc) brotlidec
