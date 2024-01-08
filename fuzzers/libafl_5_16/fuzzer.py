@@ -15,7 +15,6 @@
 """Integration code for a LibAFL-based fuzzer."""
 
 import os
-import shutil
 import subprocess
 
 from fuzzers import utils
@@ -41,16 +40,13 @@ def prepare_fuzz_environment(input_corpus):
 
 def build():  # pylint: disable=too-many-branches,too-many-statements
     """Build benchmark."""
-
-    os.environ['ASAN_OPTIONS'] = 'abort_on_error=0:allocator_may_return_null=1'
-    os.environ['UBSAN_OPTIONS'] = 'abort_on_error=0'
-    # CmpLog requires an build with different instrumentation.
-    env2 = os.environ.copy()
-
     os.environ[
         'CC'] = '/libafl/fuzzers/fuzzbench/target/release-fuzzbench/libafl_clang_cc'
     os.environ[
         'CXX'] = '/libafl/fuzzers/fuzzbench/target/release-fuzzbench/libafl_clang_cxx'
+
+    os.environ['ASAN_OPTIONS'] = 'abort_on_error=0:allocator_may_return_null=1'
+    os.environ['UBSAN_OPTIONS'] = 'abort_on_error=0'
 
     cflags = ['--libafl']
     utils.append_flags('CFLAGS', cflags)
@@ -60,44 +56,12 @@ def build():  # pylint: disable=too-many-branches,too-many-statements
     os.environ['FUZZER_LIB'] = '/stub_rt.a'
     utils.build_benchmark()
 
-    # For CmpLog build, set the OUT and FUZZ_TARGET environment
-    # variable to point to the new CmpLog build directory.
-    cmplog_build_directory = os.path.join(os.environ['OUT'], 'cmplog')
-    os.makedirs(cmplog_build_directory, exist_ok=True)
-    env2['OUT'] = cmplog_build_directory
-    fuzz_target = os.getenv('FUZZ_TARGET')
-    if fuzz_target:
-        env2['FUZZ_TARGET'] = os.path.join(cmplog_build_directory,
-                                                os.path.basename(fuzz_target))
-
-    env2['CC'] = '/libafl/fuzzers/fuzzbench/target/release-fuzzbench/libafl_clang_cmplog_cc'
-    env2['CXX'] = '/libafl/fuzzers/fuzzbench/target/release-fuzzbench/libafl_clang_cmplog_cxx'
-
-    cflags = ['--libafl']
-    utils.append_flags('CFLAGS', cflags, env=env2)
-    utils.append_flags('CXXFLAGS', cflags, env=env2)
-    utils.append_flags('LDFLAGS', cflags, env=env2)
-
-    env2['FUZZER_LIB'] = '/stub_rt_cmplog.a'
-
-    print('Re-building benchmark for CmpLog fuzzing target')
-    path = os.environ['WORK']
-    shutil.rmtree(path, ignore_errors=True)
-    os.mkdir(path)
-    utils.build_benchmark(env=env2)
 
 def fuzz(input_corpus, output_corpus, target_binary):
     """Run fuzzer."""
     prepare_fuzz_environment(input_corpus)
     dictionary_path = utils.get_dictionary_path(target_binary)
-    # add cmplog flag
-    target_binary_directory = os.path.dirname(target_binary)
-    cmplog_target_binary_directory = os.path.join(target_binary_directory, 'cmplog')
-    target_binary_name = os.path.basename(target_binary)
-    cmplog_target_binary = os.path.join(cmplog_target_binary_directory,
-                                        target_binary_name)
-    command = [target_binary, "-c", cmplog_target_binary]
-
+    command = [target_binary]
     if dictionary_path:
         command += (['-x', dictionary_path])
     command += (['-o', output_corpus, '-i', input_corpus])

@@ -35,10 +35,10 @@ RUN apt-get update && \
     apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # Download libafl.
-RUN git clone https://oauth2:glpat-vbupyQbVcFh6N2TWasJa@gitlab.fancybag.cn/wjk/LibAFL.git /libafl
+RUN git clone https://github.com/am009/LibAFL /libafl
 
-# cmpfork-libafl
-RUN cd /libafl && git pull && git checkout 2ddbbfc3e6afb3ec529b3292cff0197525ad495d
+# Checkout a current commit
+RUN cd /libafl && git pull && git checkout 5e31b8b4c40795d96104f17727d254c6dcde03f5
 # Note that due a nightly bug it is currently fixed to a known version on top!
 
 
@@ -50,15 +50,9 @@ RUN cd /libafl && \
     export LIBAFL_EDGES_MAP_SIZE=2621440 && \
     export LLVM_CONFIG=/usr/local/bin/llvm-config && \
     cd ./fuzzers/fuzzbench && \
-    PATH="/root/.cargo/bin/:$PATH" cargo build --profile release-fuzzbench --features no_link_main && \
-    cd ../fuzzbench_cmplog_driver && \
-    PATH="/root/.cargo/bin/:$PATH" cargo build --profile release-fuzzbench --features no_link_main && \
-    cp ./target/release-fuzzbench/libfuzzbench_cmplog_driver.a ../fuzzbench/target/release-fuzzbench/
+    PATH="/root/.cargo/bin/:$PATH" cargo build --profile release-fuzzbench --features no_link_main
 
 # Auxiliary weak references.
 RUN cd /libafl/fuzzers/fuzzbench && \
     clang -c stub_rt.c && \
-    ar r /stub_rt.a stub_rt.o && \
-    cd /libafl/fuzzers/fuzzbench_cmplog_driver && \
-    clang -c program.c && \
-    ar r /stub_rt_cmplog.a program.o
+    ar r /stub_rt.a stub_rt.o

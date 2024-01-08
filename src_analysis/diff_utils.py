@@ -33,7 +33,7 @@ def execute_git_diff(diff_args, repo=utils.ROOT_DIR):
     return subprocess.check_output(command, cwd=repo).decode().splitlines()
 
 
-def get_changed_files(commit_name: str = 'origin...') -> List[str]:
+def get_changed_files(commit_name: str = 'github...') -> List[str]:
     """Return a list of absolute paths of files changed in this git branch."""
     uncommitted_diff_args = ['--name-only', 'HEAD']
     output = execute_git_diff(uncommitted_diff_args)
