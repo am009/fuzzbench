@@ -46,10 +46,12 @@ cd ..
 cd libtiff
 ./autogen.sh
 ./configure --disable-shared --prefix=$SRC/install
+make clean -s
 make -j$(nproc)
 make install
 cd ..
 
+rm -rf build || true
 mkdir build
 cd build
 cmake .. -DBUILD_SHARED_LIBS:BOOL=OFF \

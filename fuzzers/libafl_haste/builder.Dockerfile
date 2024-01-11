@@ -35,10 +35,10 @@ RUN apt-get update && \
     apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # Download libafl.
-RUN git clone https://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@github.com/am009/LibAFL /libafl
+RUN git clone https://oauth2:glpat-vbupyQbVcFh6N2TWasJa@gitlab.fancybag.cn/wjk/LibAFL.git /libafl
 
 # Checkout a current commit
-RUN cd /libafl && git pull && git checkout 1f13bd2da56e84d11f6d4f160aec7912b102eb2a || true
+RUN cd /libafl && git pull && git checkout 1784981114df0cfd22fde42887c0666394bfefc5 || true
 # Note that due a nightly bug it is currently fixed to a known version on top!
 
 
