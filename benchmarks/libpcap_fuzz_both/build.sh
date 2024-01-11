@@ -16,6 +16,7 @@
 ################################################################################
 
 cd libpcap
+rm -rf build || true
 # build project
 mkdir build
 cd build
@@ -34,7 +35,7 @@ cd $SRC/tcpdump/
 zip -r fuzz_pcap_seed_corpus.zip tests/
 cp fuzz_pcap_seed_corpus.zip $OUT/
 cd $SRC/libpcap/testprogs/BPF
-mkdir corpus
+mkdir corpus || true
 ls *.txt | while read i; do tail -1 $i > corpus/$i; done
 zip -r fuzz_filter_seed_corpus.zip corpus/
 cp fuzz_filter_seed_corpus.zip $OUT/

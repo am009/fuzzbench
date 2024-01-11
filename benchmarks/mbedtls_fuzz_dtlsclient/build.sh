@@ -19,6 +19,7 @@ pip3 install -r $SRC/mbedtls/scripts/basic.requirements.txt
 
 # build project
 perl scripts/config.pl set MBEDTLS_PLATFORM_TIME_ALT
+rm -rf build || true
 mkdir build
 cd build
 cmake -DENABLE_TESTING=OFF ..

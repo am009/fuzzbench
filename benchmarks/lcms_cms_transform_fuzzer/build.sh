@@ -16,6 +16,7 @@
 cd Little-CMS
 ./autogen.sh
 ./configure
+make clean
 make -j $(nproc)
 
 $CXX $CXXFLAGS $SRC/cms_transform_fuzzer.cc -I include/ src/.libs/liblcms2.a \
