@@ -38,7 +38,7 @@ RUN apt-get update && \
 RUN git clone https://oauth2:glpat-vbupyQbVcFh6N2TWasJa@gitlab.fancybag.cn/wjk/LibAFL.git /libafl
 
 # Checkout a current commit
-RUN cd /libafl && git pull && git checkout e8c213351af1642ad771a2f8edda650870052215
+RUN cd /libafl && git pull && git checkout c0e20667e14b93f5d234080dc9922c6643f0b8eb
 # Note that due a nightly bug it is currently fixed to a known version on top!
 
 
