@@ -2,7 +2,7 @@
 
 In [SBFT'24 fuzzing competition](https://sbft24.github.io/tools/fuzzing), each fuzzer runs on 1 vCPU and 3.75 GB memory for 23h on different benchmarks.
 
-The final code of our team Mystique is available [here](https://github.com/am009/LibAFL/tree/SBFT24-final).
+The final code of our team Mystique is available [here](https://github.com/am009/LibAFL-SBFT24/tree/SBFT24-final).
 
 TODO: 
 
@@ -34,19 +34,19 @@ We first decided to base our fuzzer on the latest [Libafl fuzzbench integration]
 
 **Fixing compilation bugs**: First, we decided to base our fuzzer on the latest LibAFL. It uses a recent version of rust toolchain, so we installed clang-16. Then we encountered some compilation bugs. It turned out that, the libafl compiler wrapper also uses the clang-16, and the issue is caused by the change of the default values of some flags (during the compilation of ffmpeg, related to address sanitizer's ODR (`-fsanitize-address-use-odr-indicator`). See this [blog](http://wjk.moe/2023/FFmpeg+Santinizer%E7%BC%96%E8%AF%91%E6%97%B6%E7%9A%84%E5%A5%87%E6%80%AA%E9%97%AE%E9%A2%98/)). Instead of fixing these issues, we make the wrapper use the default clang 14.
 
-**Trace Mutations**: See [this commit](https://github.com/am009/LibAFL/commit/7e302e743d6176f66f5cec70099dc962ee8f0689). There is some metadata attached to each testcase in the queue. We add some code to record its parent testcase (which testcase it is mutated from), and the mutator used. It only records the outmost mutator, which is not very informative, because most of the mutators are composed together in the `StdMOptMutator`. (It scheduled other mutators using techniques mentioned in the paper "MPot: optimized mutation scheduling for fuzzers")
+**Trace Mutations**: See [this commit](https://github.com/am009/LibAFL-SBFT24/commit/7e302e743d6176f66f5cec70099dc962ee8f0689). There is some metadata attached to each testcase in the queue. We add some code to record its parent testcase (which testcase it is mutated from), and the mutator used. It only records the outmost mutator, which is not very informative, because most of the mutators are composed together in the `StdMOptMutator`. (It scheduled other mutators using techniques mentioned in the paper "MPot: optimized mutation scheduling for fuzzers")
 
 In LibAFL, the code paths of saving a testcase to queue and saving a testcase that triggered a crash are completely different. When there is a crash, the input is saved in the crash handler.
 
 ## Optimizations
 
-**Implement the "haste-mode"**: In SBFT'23, [HasteFuzz](https://github.com/AAArdu/hastefuzz/blob/main/hastefuz_fuzzing_competition.pdf) won the first prize in the coverage-based benchmarks. We first implemented their optimization to improve coverage in [this commit](https://github.com/am009/LibAFL/commit/5519a99e099c357e92d598de130cc130b5f4bffc).
+**Implement the "haste-mode"**: In SBFT'23, [HasteFuzz](https://github.com/AAArdu/hastefuzz/blob/main/hastefuz_fuzzing_competition.pdf) won the first prize in the coverage-based benchmarks. We first implemented their optimization to improve coverage in [this commit](https://github.com/am009/LibAFL-SBFT24/commit/5519a99e099c357e92d598de130cc130b5f4bffc).
 
 As we all know AFL uses an edge coverage map. There is a global edge map containing all edges met in all testcases. Only when a testcase finds at least one previously undiscovered edge, it will be considered interesting.
 
 For each run, before checking for new edges, hastefuzz has an additional filter step. It calculates a 30-bit hash (`xxhash_rust::xxh3`) of the coverage map and maintains a 10^30 map for the occurrence of each hash value. If a hash value is not new, then this run is recognized as uninteresting without further processing.
 
-The initial implementation uses one byte for each hash value, but we only need 1 bit to signify the occurrence. [This commit](https://github.com/am009/LibAFL/commit/e08b44607f9813e6bd7626871887264924c71aa8) did the optimization.
+The initial implementation uses one byte for each hash value, but we only need 1 bit to signify the occurrence. [This commit](https://github.com/am009/LibAFL-SBFT24/commit/e08b44607f9813e6bd7626871887264924c71aa8) did the optimization.
 
 We ran a 23h experiment with 5 retries for each benchmark.
 
@@ -95,7 +95,7 @@ The coverage of `freetype2_ftfuzzer` increases with the increase of mask probabi
 
 To further optimize the speed of cmplog using the fork server (with the persistent mode), We can build two binary, one with only coverage instrumentation, and the other with only cmplog instrumentation. Then use the shared memory to share the cmplog map. The parent process is still an in-process fuzzer. When cmplog info is needed, it signals and waits for the child. The child executes the program with the input(also passed by shared memory), and the cmplog map is filled. Then the child sends SIGSTOP to itself, and the parent resumes execution.
 
-[This commit](https://github.com/am009/LibAFL/commit/617b0f8597e643cdb2b1bd788f45762be8f3f93c) implements the trick. However, we find the coverage dropped. Probably the inter-process communication overhead is larger than the instrumentation?
+[This commit](https://github.com/am009/LibAFL-SBFT24/commit/617b0f8597e643cdb2b1bd788f45762be8f3f93c) implements the trick. However, we find the coverage dropped. Probably the inter-process communication overhead is larger than the instrumentation?
 
 
 |                           | libafl_old  | libafl_haste | libafl_8_16 | libafl_cmpfork_8_16 | libafl_cmpfork |
