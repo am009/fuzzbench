@@ -1,12 +1,8 @@
 # SBFT'24 Fuzzing Competition Writeup (Team Mystique)
 
-In [SBFT'24 fuzzing competition](https://sbft24.github.io/tools/fuzzing), each fuzzer runs on 1 vCPU and 3.75 GB memory for 23h on different benchmarks.
+In [SBFT'24 fuzzing competition](https://sbft24.github.io/tools/fuzzing), each team provides a fuzzer that runs on 1 vCPU and 3.75 GB memory for 23h on different benchmarks.
 
-The final code of our team Mystique is available [here](https://github.com/am009/LibAFL-SBFT24/tree/SBFT24-final).
-
-TODO: 
-
-- add link to our SBFT'24 paper
+The final code of our team Mystique is available [here](https://github.com/am009/LibAFL-SBFT24/tree/SBFT24-final). [paper](https://github.com/am009/fuzzbench/blob/SBFT24/Mystique.pdf)
 
 ### Useful Links
 
