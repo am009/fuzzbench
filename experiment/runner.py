@@ -248,7 +248,7 @@ class TrialRunner:  # pylint: disable=too-many-instance-attributes
         self.corpus_archives_dir = os.path.abspath(CORPUS_ARCHIVE_DIRNAME)
         self.results_dir = os.path.abspath(RESULTS_DIRNAME)
         self.log_file = os.path.join(self.results_dir, 'fuzzer-log.txt')
-        self.last_sync_time = None
+        self.start_time = None
         self.last_archive_time = -float('inf')
 
     def initialize_directories(self):
@@ -299,6 +299,12 @@ class TrialRunner:  # pylint: disable=too-many-instance-attributes
 
         fuzz_thread = threading.Thread(target=run_fuzzer, args=args)
         fuzz_thread.start()
+
+        time.sleep(1)
+        # Record absolute start time after initial sync so that all subsequent
+        # sync points are calculated relative to this fixed reference.
+        self.start_time = time.time()
+
         if environment.get('FUZZ_OUTSIDE_EXPERIMENT'):
             # Hack so that the fuzz_thread has some time to fail if something is
             # wrong. Without this we will sleep for a long time before checking
@@ -310,30 +316,32 @@ class TrialRunner:  # pylint: disable=too-many-instance-attributes
             self.sleep_until_next_sync()
             self.do_sync()
 
-        logs.info('Doing final sync.')
-        self.do_sync()
+        # logs.info('Doing final sync.')
+        # self.cycle += 1
+        # self.do_sync()
         fuzz_thread.join()
 
     def sleep_until_next_sync(self):
-        """Sleep until it is time to do the next sync."""
-        if self.last_sync_time is not None:
-            next_sync_time = (self.last_sync_time +
-                              experiment_utils.get_snapshot_seconds())
-            sleep_time = next_sync_time - time.time()
-            if sleep_time < 0:
-                # Log error if a sync has taken longer than
-                # get_snapshot_seconds() and messed up our time
-                # synchronization.
-                logs.warning('Sleep time on cycle %d is %d', self.cycle,
-                             sleep_time)
-                sleep_time = 0
-        else:
-            sleep_time = experiment_utils.get_snapshot_seconds()
+        """Sleep until it is time to do the next sync. Uses an absolute time
+        reference (start_time) to prevent drift when syncs take too long."""
+        snapshot_seconds = experiment_utils.get_snapshot_seconds()
+        next_sync_time = self.start_time + self.cycle * snapshot_seconds
+        sleep_time = next_sync_time - time.time()
+
+        if sleep_time < 0:
+            # Sync took longer than snapshot_seconds. Check if we need to
+            # skip cycles to catch up to the absolute schedule.
+            elapsed = time.time() - self.start_time
+            expected_cycle = int(elapsed / snapshot_seconds)
+            if expected_cycle > self.cycle:
+                logs.warning(
+                    'Sync is behind schedule on cycle %d. '
+                    'Skipping to cycle %d.', self.cycle, expected_cycle)
+                self.cycle = expected_cycle
+            sleep_time = 0
+
         logs.debug('Sleeping for %d seconds.', sleep_time)
         time.sleep(sleep_time)
-        # last_sync_time is recorded before the sync so that each sync happens
-        # roughly get_snapshot_seconds() after each other.
-        self.last_sync_time = time.time()
 
     def do_sync(self):
         """Save corpus archives and results to GCS."""
